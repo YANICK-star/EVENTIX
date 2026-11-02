@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Door QR Check-in Scanner | Eventix{% endblock %}
+
+{% block extra_head %}
+<!-- HTML5-QRCode Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 text-sky-700 dark:text-sky-400 text-xs font-bold uppercase tracking-wider mb-2">
+                <i class="fa-solid fa-qrcode"></i> <span data-i18n="scan.badge">Instant Gate Verification</span>
+            </div>
+            <h1 class="text-3xl font-black font-display text-slate-900 dark:text-white">
+                <span data-i18n="scan.title">Door Check-In Scanner</span>
+            </h1>
+            <p data-i18n="scan.sub" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Scan attendee QR codes via device web camera or lookup ticket token manually.
+            </p>
+        </div>
+
+        <!-- Event Scope Selector -->
+        <div class="w-full sm:w-64">
+            <label data-i18n="scan.for_event" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Scanning For Event:</label>
+            <select id="event-selector" class="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm">
+                <option value="" data-i18n="scan.all_events">-- All My Events --</option>
+                {% for ev in events %}
+                    <option value="{{ ev.id }}" {% if active_event and active_event.id == ev.id %}selected{% endif %}>
+                        {{ ev.title|truncatechars:30 }} ({{ ev.city }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Verification Result Feedback Display (Dynamic) -->
+    <div id="result-card" class="hidden p-6 rounded-3xl transition-all duration-300 shadow-xl dark:shadow-2xl space-y-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div id="result-icon-container" class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl">
+                    <i id="result-icon" class="fa-solid"></i>
+                </div>
+                <div>
+                    <h3 id="result-title" class="text-lg font-black font-display text-white"></h3>
+                    <p id="result-subtitle" class="text-xs font-semibold"></p>
+                </div>
+            </div>
+            <button onclick="dismissResult()" class="text-slate-400 hover:text-white p-2 text-sm">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div id="result-details" class="p-4 rounded-xl bg-slate-950/50 border border-slate-800 text-xs font-medium text-slate-300 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Guest Name</span>
+                <span id="res-attendee" class="font-bold text-white text-sm"></span>
+            </div>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Seats Reserved</span>
+                <span id="res-seats" class="font-bold text-sky-400 text-sm"></span>
+            </div>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Check-In Time</span>
+                <span id="res-time" class="font-bold text-emerald-400 font-mono text-sm"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanner & Manual Input Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left: Camera Viewport (2 cols) -->
+        <div class="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-md dark:shadow-2xl space-y-4">
+            
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300 flex items-center gap-2">
+                    <i class="fa-solid fa-camera text-sky-600 dark:text-sky-400"></i> <span data-i18n="scan.viewport_title">Camera Scanner Viewport</span>
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button id="btn-toggle-camera" class="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-video"></i> <span id="camera-btn-text" data-i18n="scan.start_cam">Start Camera</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Viewport Container with Laser Scanner Overlay -->
+            <div class="relative w-full rounded-2xl overflow-hidden bg-slate-950 border-2 border-slate-200 dark:border-slate-800 min-h-[320px] flex items-center justify-center">
+                <div id="qr-reader" class="w-full h-full"></div>
+                <div id="laser-line" class="scanner-laser hidden"></div>
+                
+                <div id="camera-placeholder" class="text-center p-8 space-y-3">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900 text-slate-500 flex items-center justify-center mx-auto text-2xl border border-slate-800">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">
+                        Click "Start Camera" above to activate your device's camera for instant ticket scanning.
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 text-center flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-shield-check text-emerald-500"></i>
+                Works directly on mobile Safari/Chrome browsers without any app installation.
+            </p>
+
+        </div>
+
+        <!-- Right: Manual Token Validator & Recent Log (1 col) -->
+        <div class="space-y-6">
+            
+            <!-- Manual Validator Box -->
+            <div class="p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-2xl space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300 flex items-center gap-2">
+                    <i class="fa-solid fa-keyboard text-emerald-600 dark:text-emerald-400"></i> <span data-i18n="scan.manual_title">Manual Token Lookup</span>
+                </h3>
+                <p data-i18n="scan.manual_desc" class="text-[11px] text-slate-500 dark:text-slate-400">
+                    If guest phone camera or paper is damaged, enter the ticket code:
+                </p>
+
+                <form id="manual-form" class="space-y-3">
+                    <input type="text" id="manual-token-input" placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+                    <button type="submit" id="btn-manual-validate" class="w-full py-2.5 rounded-xl font-bold text-xs text-white bg-slate-900 hover:bg-sky-600 dark:bg-slate-800 dark:hover:bg-sky-600 transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="scan.validate_btn">Validate Token</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Recent Check-in Activity Stream -->
+            <div class="p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-indigo-600 dark:text-indigo-400"></i> <span data-i18n="scan.recent_title">Recent Scans</span>
+                    </h3>
+                    <span id="scan-count-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400">0 verified</span>
+                </div>
+
+                <div id="recent-scans-list" class="space-y-2.5 text-xs max-h-60 overflow-y-auto">
+                    <p data-i18n="scan.no_scans" class="text-slate-500 text-[11px] text-center py-4 italic">No tickets verified yet this session.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let html5QrCode = null;
+    let isCameraRunning = false;
+    let scanCount = 0;
+    let isProcessing = false;
+
+    // Web Audio API Sound Synthesizer for feedback cues
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playBeep(success) {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        if (success) {
+            // High cheerful double-beep
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(880, now);
+            gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.15);
+
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1174.66, now + 0.16);
+            gain2.gain.setValueAtTime(0.3, now + 0.16);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.start(now + 0.16);
+            osc2.stop(now + 0.35);
+        } else {
+            // Low error buzz
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(160, now);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        }
+    }
+
+    function dismissResult() {
+        document.getElementById('result-card').classList.add('hidden');
+    }
+
+    function showVerificationResult(data) {
+        const card = document.getElementById('result-card');
+        const iconContainer = document.getElementById('result-icon-container');
+        const icon = document.getElementById('result-icon');
+        const title = document.getElementById('result-title');
+        const subtitle = document.getElementById('result-subtitle');
+        const attendee = document.getElementById('res-attendee');
+        const seats = document.getElementById('res-seats');
+        const time = document.getElementById('res-time');
+        const details = document.getElementById('result-details');
+
+        card.classList.remove('hidden', 'bg-emerald-950/90', 'border-emerald-800', 'bg-amber-950/90', 'border-amber-800', 'bg-rose-950/90', 'border-rose-800');
+
+        if (data.success && data.status === 'CONFIRMED') {
+            playBeep(true);
+            card.classList.add('bg-emerald-950/90', 'border', 'border-emerald-700');
+            iconContainer.className = 'w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl';
+            icon.className = 'fa-solid fa-circle-check';
+            title.innerText = 'ADMISSION GRANTED';
+            subtitle.innerText = data.message;
+            subtitle.className = 'text-xs font-semibold text-emerald-300';
+            attendee.innerText = data.attendee || 'Guest';
+            seats.innerText = (data.seats || 1) + ' Pass(es)';
+            time.innerText = data.check_in_time || 'Just now';
+            details.classList.remove('hidden');
+
+            scanCount++;
+            document.getElementById('scan-count-badge').innerText = scanCount + ' verified';
+            addRecentScanLog(data.attendee, data.seats, data.check_in_time, true);
+        } else if (data.status === 'ALREADY_CHECKED_IN') {
+            playBeep(false);
+            card.classList.add('bg-amber-950/90', 'border', 'border-amber-700');
+            iconContainer.className = 'w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl';
+            icon.className = 'fa-solid fa-triangle-exclamation';
+            title.innerText = 'ALREADY CHECKED IN';
+            subtitle.innerText = data.message;
+            subtitle.className = 'text-xs font-semibold text-amber-300';
+            attendee.innerText = data.attendee || 'Guest';
+            seats.innerText = (data.seats || 1) + ' Pass(es)';
+            time.innerText = 'Previously Scanned';
+            details.classList.remove('hidden');
+            addRecentScanLog(data.attendee || 'Unknown', data.seats || 1, 'Duplicate Scan', false);
+        } else {
+            playBeep(false);
+            card.classList.add('bg-rose-950/90', 'border', 'border-rose-700');
+            iconContainer.className = 'w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl';
+            icon.className = 'fa-solid fa-circle-xmark';
+            title.innerText = 'INVALID PASS';
+            subtitle.innerText = data.message || 'Pass not recognized or cancelled.';
+            subtitle.className = 'text-xs font-semibold text-rose-300';
+            details.classList.add('hidden');
+            addRecentScanLog('Invalid Token', '-', 'Rejected', false);
+        }
+    }
+
+    function addRecentScanLog(name, seats, timeStr, isValid) {
+        const list = document.getElementById('recent-scans-list');
+        const emptyNotice = list.querySelector('p');
+        if (emptyNotice) emptyNotice.remove();
+
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm';
+        item.innerHTML = `
+            <div class="flex items-center gap-2.5">
+                <span class="w-2 h-2 rounded-full ${isValid ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                <div>
+                    <p class="font-bold text-slate-900 dark:text-white text-xs">${name}</p>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">${seats} pass(es)</p>
+                </div>
+            </div>
+            <span class="font-mono text-[11px] ${isValid ? 'text-sky-600 dark:text-sky-400' : 'text-rose-600 dark:text-rose-400'} font-bold">${timeStr}</span>
+        `;
+        list.prepend(item);
+    }
+
+    async function sendVerificationRequest(token) {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        const eventId = document.getElementById('event-selector').value;
+        const csrfToken = '{{ csrf_token }}';
+
+        try {
+            const response = await fetch("{% url 'verify_ticket_api' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    token: token,
+                    event_id: eventId || null
+                })
+            });
+
+            const data = await response.json();
+            showVerificationResult(data);
+        } catch (err) {
+            showVerificationResult({
+                success: false,
+                status: 'ERROR',
+                message: 'Network or server error verifying ticket.'
+            });
+        } finally {
+            setTimeout(() => {
+                isProcessing = false;
+            }, 1800);
+        }
+    }
+
+    // Manual Form Submit
+    document.getElementById('manual-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('manual-token-input');
+        const token = input.value.trim();
+        if (token) {
+            sendVerificationRequest(token);
+            input.value = '';
+        }
+    });
+
+    // Camera Toggle
+    const cameraBtn = document.getElementById('btn-toggle-camera');
+    const cameraBtnText = document.getElementById('camera-btn-text');
+    const placeholder = document.getElementById('camera-placeholder');
+    const laser = document.getElementById('laser-line');
+
+    cameraBtn.addEventListener('click', async () => {
+        if (!isCameraRunning) {
+            try {
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                }
+                placeholder.classList.add('hidden');
+                laser.classList.remove('hidden');
+
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    (decodedText, decodedResult) => {
+                        sendVerificationRequest(decodedText);
+                    },
+                    (errorMessage) => {
+                        // ignore frame parse misses
+                    }
+                );
+
+                isCameraRunning = true;
+                cameraBtnText.innerText = "Stop Camera";
+                cameraBtn.classList.remove('bg-sky-600', 'hover:bg-sky-500');
+                cameraBtn.classList.add('bg-rose-600', 'hover:bg-rose-500');
+            } catch (err) {
+                alert("Camera access failed: " + err);
+                placeholder.classList.remove('hidden');
+                laser.classList.add('hidden');
+            }
+        } else {
+            if (html5QrCode) {
+                await html5QrCode.stop();
+            }
+            laser.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+            isCameraRunning = false;
+            cameraBtnText.innerText = "Start Camera";
+            cameraBtn.classList.remove('bg-rose-600', 'hover:bg-rose-500');
+            cameraBtn.classList.add('bg-sky-600', 'hover:bg-sky-500');
+        }
+    });
+</script>
+{% endblock %}

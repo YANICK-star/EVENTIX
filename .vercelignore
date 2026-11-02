@@ -1,0 +1,27 @@
+# Virtual environments
+venv/
+env/
+
+# Version control
+.git/
+.github/
+
+# Local databases
+*.sqlite3
+db.sqlite3
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local scratch / test scripts
+test_workflow.py
+seed_demo_data.py
+make_lan_qr.py
+Documentation/
+README.md
+
+# OS files
+.DS_Store
+Thumbs.db
+

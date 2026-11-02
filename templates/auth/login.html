@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign In | Eventix Cameroon{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+    <div class="w-full max-w-md space-y-8">
+        
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <div class="w-14 h-14 rounded-2xl overflow-hidden mx-auto ring-2 ring-sky-500/30 shadow-md">
+                <img src="{% static 'images/logo.jpeg' %}" alt="Eventix Logo" class="w-full h-full object-cover">
+            </div>
+            <h1 class="text-3xl font-black font-display text-slate-900 dark:text-white">
+                Welcome to Eventix
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                Access your event reservations, organizer desk, or door check-in scanner.
+            </p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="p-8 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl backdrop-blur-xl space-y-6">
+            
+            {% if form.errors %}
+                <div class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
+                    <span>Invalid username or password. Please try again.</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Username</label>
+                    {{ form.username }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Password</label>
+                    </div>
+                    {{ form.password }}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-md shadow-sky-500/25 transition transform hover:-translate-y-0.5">
+                        <span data-i18n="nav.sign_in">Sign In to My Account</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Don't have an account yet? 
+                    <a href="{% url 'register' %}" class="font-bold text-sky-600 dark:text-sky-400 hover:underline transition ml-1" data-i18n="nav.get_started">
+                        Create Account
+                    </a>
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

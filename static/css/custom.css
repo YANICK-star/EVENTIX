@@ -1,0 +1,107 @@
+/* Eventix Custom Styling & Dual-Theme Animations */
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.2), inset 0 0 15px rgba(14, 165, 233, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.4), inset 0 0 25px rgba(14, 165, 233, 0.2);
+  }
+}
+
+@keyframes scanLaser {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+.scanner-laser {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00d2ff, #38bdf8, transparent);
+  box-shadow: 0 0 15px #00d2ff, 0 0 25px #38bdf8;
+  animation: scanLaser 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Boarding pass ticket punch style - Adaptive to Light / Dark mode */
+.ticket-notch-left {
+  position: absolute;
+  top: 50%;
+  left: -14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background-color: #f8fafc; /* matches slate-50 in light mode */
+  border-radius: 9999px;
+  border-right: 1px solid #cbd5e1;
+}
+
+.ticket-notch-right {
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background-color: #f8fafc;
+  border-radius: 9999px;
+  border-left: 1px solid #cbd5e1;
+}
+
+.dark .ticket-notch-left {
+  background-color: #020617; /* matches slate-950 in dark mode */
+  border-right-color: rgba(51, 65, 85, 0.6);
+}
+
+.dark .ticket-notch-right {
+  background-color: #020617;
+  border-left-color: rgba(51, 65, 85, 0.6);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Smooth transition for theme switching */
+body {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}

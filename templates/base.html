@@ -1,0 +1,359 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Eventix | Cameroon Smart Events Platform{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Cameroon's premier smart event management, capacity-controlled ticketing, and QR check-in platform.{% endblock %}">
+    
+    <!-- Theme Initializer Script (Runs before render to prevent theme flashing) -->
+    <script src="{% static 'Js/theme.js' %}"></script>
+    
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN with Custom Theme -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+    <!-- Bilingual i18n Script -->
+    <script src="{% static 'Js/i18n.js' %}"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
+    
+    <!-- Subtle Background Glow Accent -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-sky-500/10 dark:from-sky-600/15 via-blue-500/5 to-transparent pointer-events-none blur-3xl -z-10"></div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none transition duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-8">
+                    <a href="{% url 'home' %}" class="flex items-center gap-3.5 group">
+                        <div class="relative w-11 h-11 rounded-xl overflow-hidden ring-2 ring-sky-500/30 group-hover:ring-sky-500 transition-all duration-300 shadow-md">
+                            <img src="{% static 'images/logo.jpeg' %}" alt="Eventix Logo" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-2xl font-black font-display tracking-tight text-slate-900 dark:text-white flex items-center gap-1">
+                                EVENT<span class="text-sky-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-sky-400 dark:to-blue-500">IX</span>
+                            </span>
+                            <span data-i18n="nav.brand_sub" class="text-[10px] font-semibold tracking-widest text-sky-600 dark:text-sky-400/90 uppercase -mt-1">
+                                Cameroon Smart Events
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- Desktop Nav Links -->
+                    <nav class="hidden md:flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <a href="{% url 'home' %}" class="px-3 py-2 rounded-lg hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition flex items-center gap-2">
+                            <i class="fa-solid fa-compass text-sky-600 dark:text-sky-400"></i>
+                            <span data-i18n="nav.explore">Explore</span>
+                        </a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'my_tickets' %}" class="px-3 py-2 rounded-lg hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition flex items-center gap-2">
+                                <i class="fa-solid fa-ticket text-emerald-600 dark:text-emerald-400"></i>
+                                <span data-i18n="nav.my_passes">My Passes</span>
+                            </a>
+                            {% if user.is_organizer or user.is_superuser %}
+                                <a href="{% url 'organizer_dashboard' %}" class="px-3 py-2 rounded-lg hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-pie text-indigo-600 dark:text-indigo-400"></i>
+                                    <span data-i18n="nav.organizer_desk">Organizer Desk</span>
+                                </a>
+                                <a href="{% url 'door_scanner' %}" class="px-3 py-2 rounded-lg hover:text-slate-900 dark:hover:text-white hover:bg-sky-50 dark:hover:bg-slate-800/60 transition flex items-center gap-2 text-sky-700 dark:text-sky-300 bg-sky-100/60 dark:bg-sky-950/40 border border-sky-300 dark:border-sky-800/50">
+                                    <i class="fa-solid fa-qrcode text-sky-600 dark:text-sky-400"></i>
+                                    <span data-i18n="nav.door_scanner">Door Scanner</span>
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </nav>
+                </div>
+
+                <!-- Right Action Bar: Theme, Language, User Actions -->
+                <div class="flex items-center gap-3">
+                    
+                    <!-- Language Switcher (EN / FR) -->
+                    <div class="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800/80 p-0.5 text-xs font-semibold border border-slate-200 dark:border-slate-700/60 shadow-sm">
+                        <button onclick="setLanguage('en')" class="lang-btn-en px-2.5 py-1 rounded-lg transition hover:text-sky-600 dark:hover:text-sky-400" title="English">
+                            🇬🇧 EN
+                        </button>
+                        <button onclick="setLanguage('fr')" class="lang-btn-fr px-2.5 py-1 rounded-lg transition hover:text-sky-600 dark:hover:text-sky-400" title="Français">
+                            🇫🇷 FR
+                        </button>
+                    </div>
+
+                    <!-- Theme Switcher Button (Sun / Moon) -->
+                    <button onclick="toggleTheme()" class="p-2.5 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm transition flex items-center justify-center" title="Toggle Light / Dark Mode">
+                        <i class="theme-toggle-icon fa-solid fa-moon text-sm"></i>
+                    </button>
+
+                    {% if user.is_authenticated %}
+                        <!-- User Role Badge -->
+                        <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold 
+                            {% if user.is_organizer %}bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30
+                            {% elif user.is_system_admin %}bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30
+                            {% else %}bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30{% endif %}">
+                            <i class="fa-solid fa-circle text-[6px] mr-1.5 
+                                {% if user.is_organizer %}text-indigo-600 dark:text-indigo-400{% elif user.is_system_admin %}text-rose-600 dark:text-rose-400{% else %}text-sky-600 dark:text-sky-400{% endif %}"></i>
+                            {{ user.get_role_display }}
+                        </span>
+
+                        {% if user.is_organizer or user.is_superuser %}
+                            <a href="{% url 'event_create' %}" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-md shadow-sky-500/20 transition-all transform hover:-translate-y-0.5">
+                                <i class="fa-solid fa-plus"></i> <span data-i18n="nav.host_event">Host Event</span>
+                            </a>
+                        {% endif %}
+
+                        <!-- User Profile Menu -->
+                        <div class="relative" id="user-menu-container">
+                            <button id="user-menu-btn" class="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition text-left focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-sky-500">
+                                <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-sky-600 to-blue-600 flex items-center justify-center font-bold text-sm text-white shadow-inner">
+                                    {{ user.first_name|first|default:user.username|first|upper }}
+                                </div>
+                                <span class="hidden lg:block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                    {{ user.first_name|default:user.username }}
+                                </span>
+                                <i class="fa-solid fa-chevron-down text-xs text-slate-400 hidden lg:block mr-1"></i>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-800">
+                                <div class="px-4 py-3">
+                                    <p data-i18n="nav.signed_in_as" class="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ user.email|default:user.username }}</p>
+                                    <p class="text-xs font-mono text-sky-600 dark:text-sky-400 mt-0.5">{{ user.city }}</p>
+                                </div>
+                                <div class="py-1 text-sm text-slate-700 dark:text-slate-300">
+                                    <a href="{% url 'profile' %}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition">
+                                        <i class="fa-regular fa-id-card text-slate-400 w-4"></i> <span data-i18n="nav.profile">Profile Settings</span>
+                                    </a>
+                                    <a href="{% url 'my_tickets' %}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition">
+                                        <i class="fa-solid fa-ticket text-slate-400 w-4"></i> <span data-i18n="nav.my_passes">My Passes</span>
+                                    </a>
+                                    {% if user.is_organizer or user.is_superuser %}
+                                        <a href="{% url 'organizer_dashboard' %}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition">
+                                            <i class="fa-solid fa-gauge text-slate-400 w-4"></i> <span data-i18n="nav.organizer_desk">Organizer Desk</span>
+                                        </a>
+                                        <a href="{% url 'door_scanner' %}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition">
+                                            <i class="fa-solid fa-qrcode text-slate-400 w-4"></i> <span data-i18n="nav.door_scanner">Door Scanner</span>
+                                        </a>
+                                    {% endif %}
+                                    {% if user.is_superuser %}
+                                        <a href="/admin/" target="_blank" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400 transition">
+                                            <i class="fa-solid fa-shield-halved text-rose-500 w-4"></i> <span data-i18n="nav.django_admin">Django Admin</span>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <div class="py-1 text-sm">
+                                    <a href="{% url 'logout' %}" class="flex items-center gap-2.5 px-4 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-700 transition">
+                                        <i class="fa-solid fa-arrow-right-from-bracket w-4"></i> <span data-i18n="nav.sign_out">Sign Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <a href="{% url 'login' %}" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition">
+                            <span data-i18n="nav.sign_in">Sign In</span>
+                        </a>
+                        <a href="{% url 'register' %}" class="px-4 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-md shadow-sky-500/25 transition transform hover:-translate-y-0.5">
+                            <span data-i18n="nav.get_started">Get Started</span>
+                        </a>
+                    {% endif %}
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-toggle" class="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Dropdown Nav -->
+            <div id="mobile-nav" class="hidden md:hidden pb-4 pt-2 border-t border-slate-200 dark:border-slate-800/60 flex flex-col gap-2 text-sm">
+                <a href="{% url 'home' %}" class="px-3 py-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-compass text-sky-600 dark:text-sky-400"></i> <span data-i18n="nav.explore">Explore</span>
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'my_tickets' %}" class="px-3 py-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-ticket text-emerald-600 dark:text-emerald-400"></i> <span data-i18n="nav.my_passes">My Passes</span>
+                    </a>
+                    {% if user.is_organizer or user.is_superuser %}
+                        <a href="{% url 'organizer_dashboard' %}" class="px-3 py-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-indigo-600 dark:text-indigo-400"></i> <span data-i18n="nav.organizer_desk">Organizer Desk</span>
+                        </a>
+                        <a href="{% url 'door_scanner' %}" class="px-3 py-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-qrcode text-sky-600 dark:text-sky-400"></i> <span data-i18n="nav.door_scanner">Door Scanner</span>
+                        </a>
+                        <a href="{% url 'event_create' %}" class="px-3 py-2 rounded-lg text-sky-700 dark:text-sky-400 bg-sky-100/60 dark:bg-sky-950/40 border border-sky-300 dark:border-sky-800/50 flex items-center gap-2 font-bold">
+                            <i class="fa-solid fa-plus"></i> <span data-i18n="nav.host_event">Host Event</span>
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Toast / Django Messages Banner -->
+    {% if messages %}
+        <div class="max-w-4xl mx-auto px-4 mt-6 w-full space-y-3 z-40">
+            {% for message in messages %}
+                <div class="flex items-center justify-between p-4 rounded-2xl shadow-lg backdrop-blur-md border transition-all duration-300
+                    {% if message.tags == 'error' %}bg-rose-50 dark:bg-rose-950/80 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-800/60
+                    {% elif message.tags == 'success' %}bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/60
+                    {% elif message.tags == 'warning' %}bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800/60
+                    {% else %}bg-sky-50 dark:bg-sky-950/80 text-sky-800 dark:text-sky-200 border-sky-200 dark:border-sky-800/60{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid 
+                            {% if message.tags == 'error' %}fa-circle-xmark text-rose-500
+                            {% elif message.tags == 'success' %}fa-circle-check text-emerald-500
+                            {% elif message.tags == 'warning' %}fa-triangle-exclamation text-amber-500
+                            {% else %}fa-circle-info text-sky-500{% endif %} text-lg"></i>
+                        <span class="text-sm font-semibold">{{ message }}</span>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition ml-4">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content Block -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950/90 mt-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                
+                <!-- Brand Info -->
+                <div class="md:col-span-2 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl overflow-hidden ring-1 ring-sky-500/30">
+                            <img src="{% static 'images/logo.jpeg' %}" alt="Eventix Logo" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-xl font-black font-display text-slate-900 dark:text-white">
+                            EVENT<span class="text-sky-600 dark:text-sky-400">IX</span>
+                        </span>
+                    </div>
+                    <p data-i18n="footer.tagline" class="text-slate-600 dark:text-slate-400 text-sm max-w-md leading-relaxed">
+                        Cameroon's smart event management ecosystem. Solving venue overcrowding, counterfeit paper ticketing, and slow gate queues with atomic capacity locking and instant QR door verification.
+                    </p>
+                    <div class="flex items-center gap-4 text-xs font-mono text-slate-600 dark:text-slate-400 pt-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                            <i class="fa-solid fa-location-dot text-rose-500"></i> <span data-i18n="footer.hubs">Yaoundé & Douala Hubs</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                            <i class="fa-solid fa-money-bill-wave text-emerald-500"></i> <span data-i18n="footer.momo">XAF / FCFA & MoMo Ready</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Fast Links -->
+                <div>
+                    <h3 data-i18n="nav.explore" class="text-sm font-bold text-slate-900 dark:text-white tracking-wider uppercase font-display mb-3">Explore</h3>
+                    <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                        <li><a href="{% url 'home' %}" class="hover:text-sky-600 dark:hover:text-sky-400 transition" data-i18n="hero.type_all">All Events</a></li>
+                        <li><a href="{% url 'home' %}?type=ACADEMIC" class="hover:text-sky-600 dark:hover:text-sky-400 transition" data-i18n="hero.type_academic">Academic & Seminars</a></li>
+                        <li><a href="{% url 'home' %}?type=ENTERTAINMENT" class="hover:text-sky-600 dark:hover:text-sky-400 transition" data-i18n="hero.type_entertainment">Concerts & Festivals</a></li>
+                        <li><a href="{% url 'home' %}?type=PRIVATE" class="hover:text-sky-600 dark:hover:text-sky-400 transition" data-i18n="hero.type_private">Private RSVPs & Marriages</a></li>
+                    </ul>
+                </div>
+
+                <!-- Academic Context & Project Details -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-wider uppercase font-display mb-3">Academic Context</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        <span data-i18n="footer.academic">Bachelor 3 Software Engineering</span><br>
+                        <strong class="text-slate-800 dark:text-slate-200">IAI Cameroon / CET Paul Biya</strong><br>
+                        Django MVT Architecture with 3-Tier Enterprise RBAC.
+                    </p>
+                    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 flex items-center gap-3 text-slate-500 text-sm">
+                        <a href="https://github.com" target="_blank" class="hover:text-sky-600 dark:hover:text-sky-400 transition"><i class="fa-brands fa-github text-base"></i></a>
+                        <a href="#" class="hover:text-sky-600 dark:hover:text-sky-400 transition"><i class="fa-brands fa-linkedin text-base"></i></a>
+                        <a href="#" class="hover:text-sky-600 dark:hover:text-sky-400 transition"><i class="fa-brands fa-x-twitter text-base"></i></a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="border-t border-slate-200 dark:border-slate-800/60 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
+                <p>&copy; {{ current_year }} Eventix Cameroon. <span data-i18n="footer.rights">Built with precision for the modern event ecosystem.</span></p>
+                <div class="flex items-center gap-6">
+                    <span>Designed for Cameroon</span>
+                    <span>Safe Atomic Transactions</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Interactive Scripts -->
+    <script>
+        // Dropdown toggle
+        const userBtn = document.getElementById('user-menu-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+        if (userBtn && userDropdown) {
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => {
+                if (!userDropdown.classList.contains('hidden')) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        // Mobile Nav toggle
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const mobileNav = document.getElementById('mobile-nav');
+        if (mobileToggle && mobileNav) {
+            mobileToggle.addEventListener('click', () => {
+                mobileNav.classList.toggle('hidden');
+            });
+        }
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

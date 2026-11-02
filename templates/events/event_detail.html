@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} | Eventix Cameroon{% endblock %}
+{% block meta_description %}{{ event.description|truncatewords:25 }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <a href="{% url 'home' %}" class="hover:text-sky-600 dark:hover:text-sky-400 transition" data-i18n="nav.explore">Events</a>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        <span>{{ event.city }}</span>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        <span class="text-slate-800 dark:text-slate-200 truncate font-semibold">{{ event.title }}</span>
+    </nav>
+
+    <!-- Main Grid: Event Details (Left) + Booking Sticky Sidebar (Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        
+        <!-- Left: Event Information & Media -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md dark:shadow-2xl h-80 sm:h-96">
+                {% if event.banner_image %}
+                    <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full bg-gradient-to-tr from-slate-100 via-sky-50 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-sky-950 flex items-center justify-center relative">
+                        <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:20px_20px]"></div>
+                        <i class="fa-solid 
+                            {% if event.event_type == 'ACADEMIC' %}fa-graduation-cap text-sky-600 dark:text-sky-400
+                            {% elif event.event_type == 'ENTERTAINMENT' %}fa-music text-fuchsia-600 dark:text-fuchsia-400
+                            {% elif event.event_type == 'SPORTS' %}fa-futbol text-emerald-600 dark:text-emerald-400
+                            {% else %}fa-champagne-glasses text-amber-600 dark:text-amber-400{% endif %} text-7xl opacity-40"></i>
+                    </div>
+                {% endif %}
+
+                <!-- Badges -->
+                <div class="absolute top-4 left-4 flex flex-wrap gap-2">
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider backdrop-blur-md 
+                        {% if event.event_type == 'ACADEMIC' %}bg-sky-600/90 text-white
+                        {% elif event.event_type == 'ENTERTAINMENT' %}bg-fuchsia-600/90 text-white
+                        {% elif event.event_type == 'SPORTS' %}bg-emerald-600/90 text-white
+                        {% else %}bg-amber-600/90 text-white{% endif %} shadow-sm">
+                        {{ event.get_event_type_display }}
+                    </span>
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold bg-white/90 dark:bg-slate-950/80 backdrop-blur-md text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <i class="fa-solid fa-location-dot text-rose-500 mr-1"></i> {{ event.city }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Title & Metadata Header -->
+            <div class="space-y-4">
+                <h1 class="text-3xl sm:text-4xl font-black font-display text-slate-900 dark:text-white tracking-tight leading-tight">
+                    {{ event.title }}
+                </h1>
+
+                <!-- Key Date & Venue Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-start gap-3.5 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-regular fa-calendar-check text-lg"></i>
+                        </div>
+                        <div>
+                            <p data-i18n="detail.date_time" class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold">Date & Time</p>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{{ event.start_datetime|date:"l, d F Y" }}</p>
+                            <p class="text-xs text-sky-600 dark:text-sky-400 font-mono mt-0.5">{{ event.start_datetime|date:"H:i" }} — {{ event.end_datetime|date:"H:i" }} (GMT+1)</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-start gap-3.5 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-map-location-dot text-lg"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <p data-i18n="detail.location_venue" class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold">Location & Venue</p>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{{ event.venue_address }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ event.city }}, Cameroon</p>
+                        </div>
+                        <a href="https://maps.google.com/?q={{ event.venue_address|urlencode }}+{{ event.city|urlencode }}+Cameroon" target="_blank" class="text-xs text-sky-600 dark:text-sky-400 hover:underline font-semibold self-center" title="Open Map">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organizer Profile Card -->
+            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-lg font-bold text-white shadow-inner">
+                        {{ event.organizer.first_name|first|default:event.organizer.username|first|upper }}
+                    </div>
+                    <div>
+                        <p data-i18n="detail.organized_by" class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold">Organized by</p>
+                        <p class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            {{ event.organizer.organization|default:event.organizer.get_full_name|default:event.organizer.username }}
+                            <i class="fa-solid fa-circle-check text-sky-500 text-xs" title="Verified Host"></i>
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ event.organizer.city }} · Member since {{ event.organizer.date_joined|date:"Y" }}</p>
+                    </div>
+                </div>
+
+                {% if event.organizer == user %}
+                    <a href="{% url 'event_edit' slug=event.slug %}" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-pen-to-square"></i> <span data-i18n="detail.edit_event">Edit Event</span>
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Description & Details -->
+            <div class="space-y-4">
+                <h2 data-i18n="detail.about_title" class="text-xl font-bold font-display text-slate-900 dark:text-white">About This Event</h2>
+                <div class="p-6 rounded-2xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line shadow-sm">
+                    {{ event.description }}
+                </div>
+            </div>
+
+            <!-- Safety & Gate Entry Rules -->
+            <div class="p-6 rounded-2xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/80 space-y-3 shadow-sm">
+                <h3 data-i18n="detail.protocol_title" class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-qrcode text-sky-600 dark:text-sky-400"></i> Eventix Smart Entrance Protocol
+                </h3>
+                <ul class="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                    <li class="flex items-center gap-2">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span data-i18n="detail.protocol_1">Every booked pass generates a cryptographic, non-replicable digital QR pass.</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span data-i18n="detail.protocol_2">Door ushers scan passes using web cameras to prevent duplicate entry or screenshots.</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fa-solid fa-check text-emerald-500"></i>
+                        <span data-i18n="detail.protocol_3">Strict capacity locking guarantees reserved seating and catering headcounts.</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Right: Sticky Capacity & Reservation Panel -->
+        <div class="space-y-6">
+            <div class="sticky top-28 p-6 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl backdrop-blur-xl space-y-6">
+                
+                <!-- Pricing Header -->
+                <div class="flex items-baseline justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                    <span data-i18n="detail.ticket_price" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ticket Price</span>
+                    <div class="text-right">
+                        {% if event.is_free %}
+                            <span data-i18n="events.free_rsvp" class="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-display">FREE RSVP</span>
+                            <p data-i18n="detail.free_rsvp_desc" class="text-[11px] text-slate-500 dark:text-slate-400">Zero cost entry</p>
+                        {% else %}
+                            <span class="text-3xl font-black text-slate-900 dark:text-white font-display">{{ event.price }}</span>
+                            <span class="text-sm font-bold text-sky-600 dark:text-sky-400 ml-1">FCFA</span>
+                            <p data-i18n="detail.per_pass" class="text-[11px] text-slate-500 dark:text-slate-400">Per ticket pass</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Seating Capacity Status Bar -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between text-xs font-semibold">
+                        <span data-i18n="detail.live_availability" class="text-slate-500 dark:text-slate-400">Live Seat Availability:</span>
+                        <span class="font-bold font-mono 
+                            {% if event.is_sold_out %}text-rose-600 dark:text-rose-400
+                            {% elif event.remaining_seats < 10 %}text-amber-600 dark:text-amber-400
+                            {% else %}text-emerald-600 dark:text-emerald-400{% endif %}">
+                            {{ event.remaining_seats }} / {{ event.max_capacity }} Left
+                        </span>
+                    </div>
+
+                    <div class="w-full h-2.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500
+                            {% if event.is_sold_out %}bg-rose-500
+                            {% elif event.occupancy_percentage > 85 %}bg-amber-500
+                            {% else %}bg-sky-500{% endif %}"
+                            style="width: {{ event.occupancy_percentage }}%"></div>
+                    </div>
+
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 text-center pt-1">
+                        {% if event.is_sold_out %}
+                            <i class="fa-solid fa-circle-exclamation text-rose-500 mr-1"></i> Seating is at maximum capacity.
+                        {% else %}
+                            <i class="fa-solid fa-lock text-sky-600 dark:text-sky-400 mr-1"></i> Real-time atomic database reservation active.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Active User Booking Notice -->
+                {% if user_booking %}
+                    <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200 space-y-2 shadow-sm">
+                        <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wide">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                            <span data-i18n="detail.have_passes">You Have Confirmed Passes!</span>
+                        </div>
+                        <p class="text-xs text-emerald-800 dark:text-emerald-300">
+                            You currently hold {{ user_booking.seats_booked }} ticket pass(es) for this event.
+                        </p>
+                        <a href="{% url 'ticket_detail' ticket_code=user_booking.ticket_code %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-xl transition mt-1 shadow-sm">
+                            <i class="fa-solid fa-qrcode"></i> <span data-i18n="detail.view_qr_ticket">View QR Ticket Pass</span>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Reservation Form -->
+                {% if not event.is_sold_out and not event.is_past %}
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'book_event' slug=event.slug %}" class="space-y-5">
+                            {% csrf_token %}
+
+                            <div class="space-y-2">
+                                <label for="seats-count-input" data-i18n="detail.num_passes" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                                    Number of Passes
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" id="btn-decrement" class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-lg flex items-center justify-center transition border border-slate-200 dark:border-slate-700 shadow-sm">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <div class="flex-grow">
+                                        {{ booking_form.seats_booked }}
+                                    </div>
+                                    <button type="button" id="btn-increment" class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-lg flex items-center justify-center transition border border-slate-200 dark:border-slate-700 shadow-sm">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label data-i18n="detail.guest_note" class="block text-xs font-bold text-slate-500 dark:text-slate-400">Guest Note / Special Requests</label>
+                                {{ booking_form.notes }}
+                            </div>
+
+                            <!-- Live Price Summary -->
+                            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-sm shadow-sm">
+                                <span data-i18n="detail.total_due" class="text-slate-500 dark:text-slate-400 font-semibold">Total Due:</span>
+                                <span class="font-black text-lg text-slate-900 dark:text-white font-display" id="total-price-display">
+                                    {% if event.is_free %}FREE{% else %}{{ event.price }} FCFA{% endif %}
+                                </span>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 shadow-lg shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-bolt"></i>
+                                <span data-i18n="detail.reserve_btn">Reserve Seating Instantly</span>
+                            </button>
+                            
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 text-center">
+                                Guaranteed seat locking with instant QR ticket delivery.
+                            </p>
+                        </form>
+                    {% else %}
+                        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
+                            <p data-i18n="detail.sign_in_to_book" class="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                                Please sign in or create an attendee account to lock your seat and download your digital QR pass.
+                            </p>
+                            <a href="{% url 'login' %}?next={{ request.path }}" class="block w-full py-3 rounded-xl font-bold text-xs text-white bg-sky-600 hover:bg-sky-500 shadow-md shadow-sky-500/20 transition">
+                                <span data-i18n="detail.sign_in_to_book">Sign In to Book Pass</span>
+                            </a>
+                            <a href="{% url 'register' %}" class="block text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline">
+                                <span data-i18n="detail.new_account">New to Eventix? Create Free Account</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                {% elif event.is_sold_out %}
+                    <div class="p-6 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 text-center space-y-2 shadow-sm">
+                        <i class="fa-solid fa-lock text-rose-500 text-2xl"></i>
+                        <h4 data-i18n="events.sold_out" class="text-base font-bold text-rose-800 dark:text-white">Event Sold Out</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                            All seats have been reserved. No additional tickets can be booked for this event.
+                        </p>
+                    </div>
+                {% elif event.is_past %}
+                    <div class="p-6 rounded-2xl bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 text-center space-y-2 shadow-sm">
+                        <i class="fa-regular fa-clock text-slate-400 text-2xl"></i>
+                        <h4 class="text-base font-bold text-slate-800 dark:text-white">Event Concluded</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                            This event took place in the past and is no longer accepting bookings.
+                        </p>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('seats-count-input');
+        const decBtn = document.getElementById('btn-decrement');
+        const incBtn = document.getElementById('btn-increment');
+        const totalDisplay = document.getElementById('total-price-display');
+        const unitPrice = {{ event.price|default:0 }};
+        const maxAvailable = Math.min(10, {{ event.remaining_seats|default:0 }});
+
+        function updatePrice() {
+            if (!input) return;
+            let val = parseInt(input.value) || 1;
+            if (val < 1) val = 1;
+            if (val > maxAvailable) val = maxAvailable;
+            input.value = val;
+
+            if (totalDisplay) {
+                if (unitPrice === 0) {
+                    totalDisplay.innerText = "FREE";
+                } else {
+                    const total = val * unitPrice;
+                    totalDisplay.innerText = total.toLocaleString() + " FCFA";
+                }
+            }
+        }
+
+        if (input && decBtn && incBtn) {
+            decBtn.addEventListener('click', () => {
+                let current = parseInt(input.value) || 1;
+                if (current > 1) {
+                    input.value = current - 1;
+                    updatePrice();
+                }
+            });
+
+            incBtn.addEventListener('click', () => {
+                let current = parseInt(input.value) || 1;
+                if (current < maxAvailable) {
+                    input.value = current + 1;
+                    updatePrice();
+                }
+            });
+
+            input.addEventListener('change', updatePrice);
+            input.addEventListener('keyup', updatePrice);
+        }
+    });
+</script>
+{% endblock %}

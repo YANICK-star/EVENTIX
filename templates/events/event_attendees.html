@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Attendee Roster: {{ event.title }} | Eventix{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+        <div>
+            <a href="{% url 'organizer_dashboard' %}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition mb-3">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-black font-display text-slate-900 dark:text-white">
+                Attendee Manifest: {{ event.title }}
+            </h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Real-time door check-in roster and guest list for {{ event.city }}.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'door_scanner_event' slug=event.slug %}" class="px-4 py-2.5 rounded-xl text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-qrcode text-sky-600 dark:text-sky-400"></i> Open Door Scanner
+            </a>
+            <a href="{% url 'export_attendees_csv' slug=event.slug %}" class="px-4 py-2.5 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-file-csv text-emerald-600 dark:text-emerald-400"></i> Export Clean CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="p-4 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <form method="GET" class="flex items-center gap-3 w-full sm:w-auto flex-grow max-w-lg">
+            <div class="relative w-full">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" name="search" value="{{ search }}" placeholder="Search attendee name, email, phone, ticket UUID..." 
+                    class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+            </div>
+            <button type="submit" class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 transition">
+                Search
+            </button>
+            {% if search or status_filter %}
+                <a href="{% url 'event_attendees' slug=event.slug %}" class="text-xs text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap">
+                    Clear
+                </a>
+            {% endif %}
+        </form>
+
+        <div class="flex items-center gap-2 text-xs font-semibold">
+            <span class="text-slate-500 dark:text-slate-400">Status:</span>
+            <a href="{% url 'event_attendees' slug=event.slug %}" class="px-2.5 py-1 rounded-lg {% if not status_filter %}bg-sky-600 text-white font-bold{% else %}bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
+                All
+            </a>
+            <a href="{% url 'event_attendees' slug=event.slug %}?status=CONFIRMED" class="px-2.5 py-1 rounded-lg {% if status_filter == 'CONFIRMED' %}bg-emerald-600 text-white font-bold{% else %}bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
+                Confirmed
+            </a>
+            <a href="{% url 'event_attendees' slug=event.slug %}?status=CHECKED_IN" class="px-2.5 py-1 rounded-lg {% if status_filter == 'CHECKED_IN' %}bg-sky-600 text-white font-bold{% else %}bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
+                Checked In
+            </a>
+        </div>
+    </div>
+
+    <!-- Attendees Table -->
+    {% if bookings %}
+        <div class="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-md dark:shadow-2xl">
+            <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+                <thead class="bg-slate-50 dark:bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                        <th class="px-6 py-4">Ticket Pass Token</th>
+                        <th class="px-6 py-4">Attendee Name & Email</th>
+                        <th class="px-6 py-4">Phone / City</th>
+                        <th class="px-6 py-4">Seats</th>
+                        <th class="px-6 py-4">Admission Status</th>
+                        <th class="px-6 py-4">Gate Check-in Time</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                    {% for b in bookings %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                            <td class="px-6 py-4 font-mono text-xs">
+                                <span class="text-sky-700 dark:text-sky-400 select-all font-bold">
+                                    {{ b.ticket_code|stringformat:"s"|slice:":8"|upper }}...
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="font-bold text-slate-900 dark:text-white">{{ b.attendee.get_full_name|default:b.attendee.username }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ b.attendee.email }}</p>
+                            </td>
+                            <td class="px-6 py-4 text-xs">
+                                <p class="text-slate-800 dark:text-slate-200">{{ b.attendee.phone_number|default:'N/A' }}</p>
+                                <p class="text-slate-500 dark:text-slate-400">{{ b.attendee.city }}</p>
+                            </td>
+                            <td class="px-6 py-4 font-mono text-xs font-bold text-slate-900 dark:text-white">
+                                {{ b.seats_booked }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase 
+                                    {% if b.status == 'CHECKED_IN' %}bg-sky-50 dark:bg-sky-500/20 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30
+                                    {% elif b.status == 'CONFIRMED' %}bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30
+                                    {% else %}bg-rose-50 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30{% endif %}">
+                                    {{ b.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">
+                                {% if b.check_in_time %}
+                                    <span class="text-sky-700 dark:text-sky-400 font-bold">{{ b.check_in_time|date:"H:i:s" }}</span>
+                                    <span class="text-[10px] block text-slate-400">by {{ b.checked_in_by.username|default:'Door Staff' }}</span>
+                                {% else %}
+                                    <span class="text-slate-400">Pending Gate Entry</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="p-10 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-center space-y-2 shadow-sm">
+            <p class="text-sm text-slate-500 dark:text-slate-400">No attendees found matching the query.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Organizer Dashboard | Eventix{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    
+    <!-- Dashboard Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2">
+                <i class="fa-solid fa-gauge-high"></i> <span data-i18n="org.desk_badge">Organizer Command Desk</span>
+            </div>
+            <h1 class="text-3xl font-black font-display text-slate-900 dark:text-white">
+                {{ user.organization|default:user.get_full_name|default:user.username }} <span data-i18n="org.workspace_title">Workspace</span>
+            </h1>
+            <p data-i18n="org.workspace_sub" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Monitor real-time capacities, manage door admissions, and export attendee manifests.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'door_scanner' %}" class="px-4 py-2.5 rounded-xl text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-qrcode text-sky-600 dark:text-sky-400"></i> <span data-i18n="org.open_scanner">Open Door Scanner</span>
+            </a>
+            <a href="{% url 'event_create' %}" class="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-md shadow-sky-500/25 transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="org.create_event">Create New Event</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Analytics Stats Strip -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Total Events -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
+            <div class="flex items-center justify-between">
+                <span data-i18n="org.stat_hosted" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Events Hosted</span>
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-black font-display text-slate-900 dark:text-white">{{ total_events }}</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Active and past events</p>
+        </div>
+
+        <!-- Total Attendees -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
+            <div class="flex items-center justify-between">
+                <span data-i18n="org.stat_bookings" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Bookings</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-black font-display text-emerald-600 dark:text-emerald-400">{{ total_attendees }}</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Guaranteed reserved seats</p>
+        </div>
+
+        <!-- Checked In At Door -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
+            <div class="flex items-center justify-between">
+                <span data-i18n="org.stat_verified" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Gate Verified</span>
+                <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-black font-display text-indigo-600 dark:text-indigo-400">{{ total_checked_in }}</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Checked in via QR scanner</p>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
+            <div class="flex items-center justify-between">
+                <span data-i18n="org.stat_revenue" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Gross Ticket Value</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-black font-display text-amber-600 dark:text-amber-400 font-mono">{{ total_revenue }} <span class="text-xs">FCFA</span></p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Confirmed transactions</p>
+        </div>
+
+    </div>
+
+    <!-- Events Management Section -->
+    <div class="space-y-6">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold font-display text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-sky-600 dark:text-sky-400"></i> <span data-i18n="org.portfolio_title">My Events Portfolio</span>
+            </h2>
+            <span class="text-xs text-slate-500 dark:text-slate-400">{{ events.count }} event(s) registered</span>
+        </div>
+
+        {% if events %}
+            <div class="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-md dark:shadow-2xl">
+                <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+                    <thead class="bg-slate-50 dark:bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <th data-i18n="org.th_details" class="px-6 py-4">Event Details</th>
+                            <th data-i18n="org.th_schedule" class="px-6 py-4">City & Schedule</th>
+                            <th data-i18n="org.th_seating" class="px-6 py-4">Seating & Occupancy</th>
+                            <th data-i18n="org.th_checked" class="px-6 py-4">Checked-in</th>
+                            <th data-i18n="org.th_pricing" class="px-6 py-4">Pricing</th>
+                            <th data-i18n="org.th_actions" class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                        {% for event in events %}
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                                
+                                <!-- Title & Category -->
+                                <td class="px-6 py-4">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase 
+                                                {% if event.status == 'PUBLISHED' %}bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400
+                                                {% elif event.status == 'DRAFT' %}bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400
+                                                {% else %}bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400{% endif %}">
+                                                {{ event.get_status_display }}
+                                            </span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">{{ event.get_event_type_display }}</span>
+                                        </div>
+                                        <a href="{% url 'event_detail' slug=event.slug %}" class="font-bold text-slate-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 transition text-base">
+                                            {{ event.title }}
+                                        </a>
+                                    </div>
+                                </td>
+
+                                <!-- City & Schedule -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-xs space-y-1">
+                                        <p class="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5">
+                                            <i class="fa-solid fa-location-dot text-rose-500"></i> {{ event.city }}
+                                        </p>
+                                        <p class="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                            <i class="fa-regular fa-calendar text-slate-400"></i>
+                                            {{ event.start_datetime|date:"d M Y · H:i" }}
+                                        </p>
+                                    </div>
+                                </td>
+
+                                <!-- Seating Progress Bar -->
+                                <td class="px-6 py-4 min-w-[200px]">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-500 dark:text-slate-400 font-mono">{{ event.booked_seats }} / {{ event.max_capacity }}</span>
+                                            <span class="font-bold font-mono 
+                                                {% if event.is_sold_out %}text-rose-600 dark:text-rose-400
+                                                {% elif event.occupancy_percentage > 85 %}text-amber-600 dark:text-amber-400
+                                                {% else %}text-sky-600 dark:text-sky-400{% endif %}">
+                                                {{ event.occupancy_percentage }}%
+                                            </span>
+                                        </div>
+                                        <div class="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                                            <div class="h-full rounded-full transition-all 
+                                                {% if event.is_sold_out %}bg-rose-500
+                                                {% elif event.occupancy_percentage > 85 %}bg-amber-500
+                                                {% else %}bg-sky-500{% endif %}" 
+                                                style="width: {{ event.occupancy_percentage }}%"></div>
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                                            {{ event.remaining_seats }} seat(s) remaining
+                                        </p>
+                                    </div>
+                                </td>
+
+                                <!-- Gate Checked-in -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-900/60">
+                                        {{ event.checked_in_count|default:0 }} at door
+                                    </span>
+                                </td>
+
+                                <!-- Price -->
+                                <td class="px-6 py-4 whitespace-nowrap font-mono text-xs font-bold">
+                                    {% if event.is_free %}
+                                        <span class="text-emerald-600 dark:text-emerald-400">FREE</span>
+                                    {% else %}
+                                        <span class="text-slate-900 dark:text-white">{{ event.price }} FCFA</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Actions -->
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{% url 'event_attendees' slug=event.slug %}" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Attendee Roster">
+                                            <i class="fa-solid fa-users"></i>
+                                        </a>
+                                        <a href="{% url 'door_scanner_event' slug=event.slug %}" class="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 hover:bg-sky-100 border border-sky-300 dark:border-sky-800/80 transition" title="Launch Door Scanner">
+                                            <i class="fa-solid fa-qrcode"></i>
+                                        </a>
+                                        <a href="{% url 'export_attendees_csv' slug=event.slug %}" class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-800/80 transition" title="Export CSV Manifest">
+                                            <i class="fa-solid fa-file-csv"></i>
+                                        </a>
+                                        <a href="{% url 'event_edit' slug=event.slug %}" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Edit Event Details">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                    </div>
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-12 rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
+                <div class="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-calendar-plus"></i>
+                </div>
+                <h3 class="text-xl font-bold font-display text-slate-900 dark:text-white">No Events Published Yet</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                    You haven't created any events. Set up your conference, sports match, concert, or private milestone to enable atomic seat locking and QR door passes.
+                </p>
+                <div>
+                    <a href="{% url 'event_create' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs text-white bg-sky-600 hover:bg-sky-500 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> <span data-i18n="org.create_event">Publish Your First Event</span>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

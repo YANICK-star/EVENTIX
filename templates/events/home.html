@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Discover Events in Cameroon | Eventix{% endblock %}
+
+{% block content %}
+<div class="space-y-16">
+    
+    <!-- Hero & Discovery Header -->
+    <section class="relative pt-12 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto space-y-6">
+            
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/20 text-sky-700 dark:text-sky-400 text-xs font-bold tracking-wide uppercase shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-sky-500 animate-ping"></span>
+                <span data-i18n="hero.badge">Cameroon Smart Event Ecosystem</span>
+            </div>
+
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-slate-900 dark:text-white leading-tight">
+                <span data-i18n="hero.title_1">Never Overbook.</span><br>
+                <span data-i18n="hero.title_2" class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-500 dark:to-indigo-400">
+                    Never Gate-Crash.
+                </span>
+            </h1>
+
+            <p data-i18n="hero.desc" class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
+                Discover academic conferences, musical festivals, sporting matches, and private milestones with atomic seat reservation and instant QR entrance check-in.
+            </p>
+
+            <!-- Search & Filter Console -->
+            <div class="mt-8 p-3 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl backdrop-blur-xl max-w-4xl mx-auto">
+                <form method="GET" action="{% url 'home' %}" class="flex flex-col md:flex-row items-center gap-3">
+                    
+                    <!-- Search Input -->
+                    <div class="relative flex-grow w-full">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" name="q" value="{{ query }}" placeholder="Search events, seminars, concerts, venues..." data-i18n-placeholder="hero.search_placeholder"
+                            class="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+                    </div>
+
+                    <!-- City Dropdown Filter -->
+                    <div class="relative w-full md:w-48">
+                        <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-rose-500"></i>
+                        <select name="city" class="w-full pl-10 pr-8 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition appearance-none cursor-pointer">
+                            <option value="" data-i18n="hero.all_cities">All Cameroon Cities</option>
+                            {% for c in global_cities %}
+                                <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Category Filter Dropdown -->
+                    <div class="relative w-full md:w-48">
+                        <i class="fa-solid fa-tags absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500"></i>
+                        <select name="category" class="w-full pl-10 pr-8 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition appearance-none cursor-pointer">
+                            <option value="" data-i18n="hero.all_categories">All Categories</option>
+                            {% for cat in global_categories %}
+                                <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="w-full md:w-auto px-7 py-3 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-md shadow-sky-500/25 transition flex items-center justify-center gap-2">
+                        <span data-i18n="hero.search_btn">Search</span>
+                    </button>
+                </form>
+
+                <!-- Quick Category Filter Pills -->
+                <div class="flex items-center gap-2 overflow-x-auto pt-3 px-1 text-xs">
+                    <span data-i18n="hero.filter_type" class="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px] whitespace-nowrap">Filter Type:</span>
+                    <a href="{% url 'home' %}" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition {% if not selected_type %}bg-sky-600 text-white font-bold shadow-sm{% else %}bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                        <span data-i18n="hero.type_all">All Types</span>
+                    </a>
+                    <a href="{% url 'home' %}?type=ACADEMIC{% if selected_city %}&city={{ selected_city }}{% endif %}" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition {% if selected_type == 'ACADEMIC' %}bg-sky-600 text-white font-bold shadow-sm{% else %}bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                        <i class="fa-solid fa-graduation-cap mr-1 text-sky-600 dark:text-sky-400"></i> <span data-i18n="hero.type_academic">Academic & Seminars</span>
+                    </a>
+                    <a href="{% url 'home' %}?type=ENTERTAINMENT{% if selected_city %}&city={{ selected_city }}{% endif %}" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition {% if selected_type == 'ENTERTAINMENT' %}bg-sky-600 text-white font-bold shadow-sm{% else %}bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                        <i class="fa-solid fa-music mr-1 text-fuchsia-600 dark:text-fuchsia-400"></i> <span data-i18n="hero.type_entertainment">Entertainment & Concerts</span>
+                    </a>
+                    <a href="{% url 'home' %}?type=SPORTS{% if selected_city %}&city={{ selected_city }}{% endif %}" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition {% if selected_type == 'SPORTS' %}bg-sky-600 text-white font-bold shadow-sm{% else %}bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                        <i class="fa-solid fa-futbol mr-1 text-emerald-600 dark:text-emerald-400"></i> <span data-i18n="hero.type_sports">Sports & Matches</span>
+                    </a>
+                    <a href="{% url 'home' %}?type=PRIVATE{% if selected_city %}&city={{ selected_city }}{% endif %}" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition {% if selected_type == 'PRIVATE' %}bg-sky-600 text-white font-bold shadow-sm{% else %}bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                        <i class="fa-solid fa-champagne-glasses mr-1 text-amber-600 dark:text-amber-400"></i> <span data-i18n="hero.type_private">Private Milestones</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ecosystem Key Metrics Strip -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 max-w-4xl mx-auto">
+                <div class="p-4 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 text-center shadow-sm">
+                    <p class="text-2xl font-black font-display text-slate-900 dark:text-white">{{ total_events_count }}</p>
+                    <p data-i18n="metric.active_events" class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold">Active Events</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 text-center shadow-sm">
+                    <p class="text-2xl font-black font-display text-sky-600 dark:text-sky-400">{{ total_attendees_count }}</p>
+                    <p data-i18n="metric.passes_reserved" class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold">Passes Reserved</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 text-center shadow-sm">
+                    <p class="text-2xl font-black font-display text-emerald-600 dark:text-emerald-400">100%</p>
+                    <p data-i18n="metric.overbook_proof" class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold">Overbook Proof</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 text-center shadow-sm">
+                    <p class="text-2xl font-black font-display text-indigo-600 dark:text-indigo-400">&lt; 1s</p>
+                    <p data-i18n="metric.qr_checkin" class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold">Door QR Check-in</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Main Events Grid Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div>
+                <h2 class="text-2xl font-black font-display text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <i class="fa-solid fa-fire text-sky-600 dark:text-sky-400"></i> <span data-i18n="events.upcoming_title">Upcoming Events</span>
+                </h2>
+                <p data-i18n="events.upcoming_subtitle" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Browse and reserve verified seating for premier events across Cameroon
+                </p>
+            </div>
+            
+            {% if query or selected_city or selected_category or selected_type %}
+                <a href="{% url 'home' %}" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> <span data-i18n="events.reset_filters">Reset Filters</span>
+                </a>
+            {% endif %}
+        </div>
+
+        {% if events %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for event in events %}
+                    <article class="group rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 hover:border-sky-500/50 transition-all duration-300 overflow-hidden flex flex-col shadow-md hover:shadow-xl dark:shadow-xl dark:hover:shadow-2xl">
+                        
+                        <!-- Event Banner Image / Graphic -->
+                        <div class="relative h-48 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            {% if event.banner_image %}
+                                <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-tr from-slate-100 via-sky-50 to-slate-200 dark:from-slate-900 dark:via-sky-950 dark:to-slate-900 flex items-center justify-center relative overflow-hidden">
+                                    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                                    <i class="fa-solid 
+                                        {% if event.event_type == 'ACADEMIC' %}fa-graduation-cap text-sky-600 dark:text-sky-400
+                                        {% elif event.event_type == 'ENTERTAINMENT' %}fa-music text-fuchsia-600 dark:text-fuchsia-400
+                                        {% elif event.event_type == 'SPORTS' %}fa-futbol text-emerald-600 dark:text-emerald-400
+                                        {% else %}fa-champagne-glasses text-amber-600 dark:text-amber-400{% endif %} text-5xl opacity-40"></i>
+                                </div>
+                            {% endif %}
+
+                            <!-- Event Badges Overlay -->
+                            <div class="absolute top-3 left-3 flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider backdrop-blur-md 
+                                    {% if event.event_type == 'ACADEMIC' %}bg-sky-600/90 text-white
+                                    {% elif event.event_type == 'ENTERTAINMENT' %}bg-fuchsia-600/90 text-white
+                                    {% elif event.event_type == 'SPORTS' %}bg-emerald-600/90 text-white
+                                    {% else %}bg-amber-600/90 text-white{% endif %} shadow-sm">
+                                    {{ event.get_event_type_display|truncatechars:20 }}
+                                </span>
+                                <span class="px-2 py-1 rounded-lg text-[11px] font-bold bg-white/90 dark:bg-slate-950/80 backdrop-blur-md text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+                                    <i class="fa-solid fa-location-dot text-rose-500 mr-1"></i> {{ event.city }}
+                                </span>
+                            </div>
+
+                            <!-- Price Tag -->
+                            <div class="absolute bottom-3 right-3">
+                                <span class="px-3 py-1 rounded-xl text-xs font-black backdrop-blur-md 
+                                    {% if event.is_free %}bg-emerald-600 text-white
+                                    {% else %}bg-white/95 dark:bg-slate-950/90 text-sky-700 dark:text-sky-400 border border-slate-200 dark:border-sky-500/40{% endif %} shadow-md">
+                                    {% if event.is_free %}
+                                        <span data-i18n="events.free_rsvp">FREE / RSVP</span>
+                                    {% else %}
+                                        {{ event.price }} FCFA
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                            <div>
+                                <!-- Date & Time -->
+                                <p class="text-xs font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1.5 mb-2">
+                                    <i class="fa-regular fa-calendar text-slate-400"></i>
+                                    {{ event.start_datetime|date:"D, d M Y · H:i" }}
+                                </p>
+
+                                <!-- Title -->
+                                <h3 class="text-lg font-black font-display text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors line-clamp-2">
+                                    <a href="{% url 'event_detail' slug=event.slug %}">
+                                        {{ event.title }}
+                                    </a>
+                                </h3>
+
+                                <!-- Venue Address -->
+                                <p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-2 truncate">
+                                    <i class="fa-solid fa-map-pin text-slate-400"></i>
+                                    {{ event.venue_address }}
+                                </p>
+
+                                <p class="text-sm text-slate-600 dark:text-slate-300 mt-3 line-clamp-2 leading-relaxed">
+                                    {{ event.description }}
+                                </p>
+                            </div>
+
+                            <!-- Seating Capacity Indicator -->
+                            <div class="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span data-i18n="events.seating_capacity" class="text-slate-500 dark:text-slate-400 font-medium">Seating Capacity</span>
+                                    <span class="font-mono font-bold 
+                                        {% if event.is_sold_out %}text-rose-600 dark:text-rose-400
+                                        {% elif event.remaining_seats < 15 %}text-amber-600 dark:text-amber-400
+                                        {% else %}text-emerald-600 dark:text-emerald-400{% endif %}">
+                                        {% if event.is_sold_out %}
+                                            <span data-i18n="events.sold_out">SOLD OUT</span>
+                                        {% else %}
+                                            {{ event.remaining_seats }} / {{ event.max_capacity }} <span data-i18n="events.seats_left">seats left</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500 
+                                        {% if event.is_sold_out %}bg-rose-500
+                                        {% elif event.occupancy_percentage > 85 %}bg-amber-500
+                                        {% else %}bg-sky-500{% endif %}"
+                                        style="width: {{ event.occupancy_percentage }}%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Action Button -->
+                            <div class="pt-2">
+                                <a href="{% url 'event_detail' slug=event.slug %}" class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-center transition flex items-center justify-center gap-2
+                                    {% if event.is_sold_out %}
+                                        bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed
+                                    {% else %}
+                                        bg-slate-900 hover:bg-sky-600 text-white dark:bg-slate-800 dark:hover:bg-sky-600 shadow-sm
+                                    {% endif %}">
+                                    {% if event.is_sold_out %}
+                                        <i class="fa-solid fa-lock"></i> <span data-i18n="events.seating_full">Seating Full</span>
+                                    {% else %}
+                                        <span data-i18n="events.view_reserve">View & Reserve Pass</span>
+                                        <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                                    {% endif %}
+                                </a>
+                            </div>
+
+                        </div>
+
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-20 px-4 rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 max-w-xl mx-auto space-y-4 shadow-sm">
+                <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 text-2xl">
+                    <i class="fa-regular fa-calendar-xmark"></i>
+                </div>
+                <h3 data-i18n="events.no_events" class="text-xl font-bold font-display text-slate-900 dark:text-white">No Events Found</h3>
+                <p data-i18n="events.no_events_desc" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    There are currently no events matching your selected city or search keywords. Try adjusting your filters or browse all events.
+                </p>
+                <div class="pt-2">
+                    <a href="{% url 'home' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-sky-600 hover:bg-sky-500 transition shadow-sm">
+                        <span data-i18n="events.browse_all">Browse All Events</span>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Why Eventix Solves Cameroonian Event Challenges Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div class="p-8 sm:p-12 rounded-3xl bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:via-slate-900/50 dark:to-slate-950 border border-slate-200 dark:border-slate-800 shadow-md dark:shadow-2xl space-y-10">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <h2 class="text-2xl sm:text-3xl font-black font-display text-slate-900 dark:text-white">
+                    Built for the Cameroon Event Ecosystem
+                </h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Engineered according to the IAI Cameroon Software Engineering blueprint to eliminate the 4 critical bottlenecks in local event operations.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Pillar 1 -->
+                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-users-slash"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Overcrowding Elimination</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Strict atomic database transactions prevent uncoordinated WhatsApp broadcasts from exceeding venue capacities.
+                    </p>
+                </div>
+
+                <!-- Pillar 2 -->
+                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Anti-Counterfeit Passes</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Replaces easily duplicated paper tickets and fake MoMo screenshots with cryptographic unique QR codes.
+                    </p>
+                </div>
+
+                <!-- Pillar 3 -->
+                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Zero Gate Queues</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Door ushers scan passes using their phone cameras in milliseconds, eliminating manual clipboard lookups under rain or sun.
+                    </p>
+                </div>
+
+                <!-- Pillar 4 -->
+                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Instant Reconciliation</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Real-time attendee rosters and 1-click CSV exports eliminate post-event financial and headcount discrepancies.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
