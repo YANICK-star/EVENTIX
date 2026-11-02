@@ -21,7 +21,6 @@ db.sqlite3
 .vercel
 
 # Static and Media
-staticfiles/
 media/avatars/
 media/events/banners/
 media/tickets/qr/
